@@ -1,31 +1,28 @@
-# GitHub Pages GeoTIFF overlay
+# Classified raster over Esri Wayback imagery
 
-A serverless Leaflet map that displays `classified.tif` over Esri World Imagery Wayback release `18691` and reports clicked coordinates in WGS 84 and EPSG:32643.
-
-## Publish on GitHub Pages
-
-1. Create a new GitHub repository.
-2. Upload every file in this folder to the repository root.
-3. Open **Settings → Pages**.
-4. Under **Build and deployment**, select **Deploy from a branch**.
-5. Select the `main` branch and `/ (root)`, then save.
-
-GitHub will provide the public Pages URL after deployment.
-
-## Test locally
-
-Browsers do not normally allow JavaScript to fetch a TIFF from a `file://` URL. Run a small local server instead:
-
-```bash
-python -m http.server 8000
-```
-
-Then visit `http://localhost:8000`.
+Static Leaflet app for GitHub Pages.
 
 ## Files
 
-- `index.html` — page and third-party CDN imports
-- `app.js` — map, GeoTIFF rendering, opacity, and click coordinates
-- `styles.css` — responsive layout
-- `classified.tif` — raster displayed by the app
-- `.nojekyll` — tells GitHub Pages to serve the files directly
+- `index.html` – page markup
+- `styles.css` – page styling
+- `app.js` – map, Wayback tiles, ROI restriction, opacity and coordinate clicks
+- `classified.png` – transparent browser-ready rendering of the source GeoTIFF
+- `classified.tif` – original raster, retained for reference
+
+## Why PNG is used in the browser
+
+The classified GeoTIFF is pre-rendered to a transparent PNG. This avoids slow or unreliable client-side GeoTIFF parsing while preserving the class colors. The image is positioned using the GeoTIFF's exact geographic bounds.
+
+## Region restriction
+
+The map is fitted and constrained to the raster footprint:
+
+- West: 77.1534774822
+- South: 8.1437161246
+- East: 77.6209454451
+- North: 8.6092415854
+
+## GitHub Pages
+
+Upload all files to the repository root, commit, and enable GitHub Pages from the `main` branch and `/ (root)` folder.

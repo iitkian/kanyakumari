@@ -1,26 +1,25 @@
 const WAYBACK_URL =
   "https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/default028mm/MapServer/tile/18691/{z}/{y}/{x}";
 
-const TIFF_URL = "classified.tif";
+const OVERLAY_URL = "classified.png";
 const RASTER_CRS = "EPSG:32643";
 const UTM43N = "+proj=utm +zone=43 +datum=WGS84 +units=m +no_defs +type=crs";
 
-const CLASS_COLORS = {
-  0: [181, 101, 29, 255],
-  1: [154, 205, 50, 255],
-  2: [34, 139, 34, 255],
-  3: [0, 100, 0, 255],
-  4: [210, 180, 140, 255],
-  5: [0, 102, 204, 255],
-  6: [124, 252, 0, 255],
-  7: [211, 211, 211, 0]
-};
+// GeoTIFF footprint transformed from EPSG:32643 to EPSG:4326.
+// Leaflet expects [[south, west], [north, east]].
+const ROI_BOUNDS = L.latLngBounds(
+  [8.143716124564987, 77.15347748215864],
+  [8.609241585358792, 77.62094544512861]
+);
 
 proj4.defs(RASTER_CRS, UTM43N);
 
 const map = L.map("map", {
   zoomControl: true,
-  preferCanvas: true
+  preferCanvas: true,
+  maxBounds: ROI_BOUNDS.pad(0.03),
+  maxBoundsViscosity: 1.0,
+  minZoom: 10
 });
 
 const wayback = L.tileLayer(WAYBACK_URL, {
@@ -28,70 +27,47 @@ const wayback = L.tileLayer(WAYBACK_URL, {
   maxZoom: 23,
   maxNativeZoom: 23,
   tileSize: 256,
-  attribution:
-    "Imagery © Esri and contributors | Wayback release 18691"
+  attribution: "Imagery © Esri and contributors | Wayback release 18691"
 }).addTo(map);
 
-map.setView([8.38, 77.5], 9);
-
-let rasterLayer;
-let clickMarker;
-
-const statusEl = document.getElementById("status");
 const opacityEl = document.getElementById("opacity");
 const opacityValueEl = document.getElementById("opacity-value");
+const statusEl = document.getElementById("status");
+let clickMarker;
 
 function setStatus(message, isError = false) {
   statusEl.textContent = message;
   statusEl.classList.toggle("error", isError);
 }
 
-function rgba([r, g, b, a]) {
-  return `rgba(${r}, ${g}, ${b}, ${a / 255})`;
-}
+const overlay = L.imageOverlay(OVERLAY_URL, ROI_BOUNDS, {
+  opacity: Number(opacityEl.value),
+  interactive: false,
+  crossOrigin: false,
+  alt: "Classified raster overlay"
+});
 
-async function addGeoTiff() {
-  try {
-    const response = await fetch(TIFF_URL);
-    if (!response.ok) throw new Error(`GeoTIFF request failed (${response.status})`);
+overlay.on("load", () => {
+  setStatus("Overlay loaded. Click the map for coordinates.");
+});
 
-    const arrayBuffer = await response.arrayBuffer();
-    const georaster = await parseGeoraster(arrayBuffer);
+overlay.on("error", () => {
+  setStatus("Could not load classified.png. Confirm it is in the repository root.", true);
+});
 
-    rasterLayer = new GeoRasterLayer({
-      georaster,
-      opacity: Number(opacityEl.value),
-      resolution: 256,
-      pixelValuesToColorFn: values => {
-        const value = Math.round(values[0]);
-        return rgba(CLASS_COLORS[value] || [0, 0, 0, 0]);
-      }
-    });
+overlay.addTo(map);
+map.fitBounds(ROI_BOUNDS, { padding: [15, 15], animate: false });
 
-    rasterLayer.addTo(map);
-    rasterLayer.bringToFront();
-    map.fitBounds(rasterLayer.getBounds(), { padding: [20, 20] });
-
-    L.control.layers(
-      { "Esri Wayback imagery": wayback },
-      { "Classified GeoTIFF": rasterLayer },
-      { collapsed: true }
-    ).addTo(map);
-
-    setStatus("GeoTIFF loaded. Click the map for coordinates.");
-  } catch (error) {
-    console.error(error);
-    setStatus(
-      "Could not load classified.tif. Open this app through a web server or GitHub Pages, not as a local file.",
-      true
-    );
-  }
-}
+L.control.layers(
+  { "Esri Wayback imagery": wayback },
+  { "Classified raster": overlay },
+  { collapsed: true }
+).addTo(map);
 
 opacityEl.addEventListener("input", event => {
   const opacity = Number(event.target.value);
   opacityValueEl.textContent = `${Math.round(opacity * 100)}%`;
-  if (rasterLayer) rasterLayer.setOpacity(opacity);
+  overlay.setOpacity(opacity);
 });
 
 map.on("click", event => {
@@ -116,5 +92,3 @@ map.on("click", event => {
   }
   clickMarker.bindPopup(popupHtml).openPopup();
 });
-
-addGeoTiff();
