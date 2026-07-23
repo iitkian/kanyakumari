@@ -7,13 +7,14 @@ const WAYBACK_CAPABILITIES =
   "https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/WMTS/1.0.0/WMTSCapabilities.xml";
 
 const CLASS_COLORS = {
-  0: "#ff0000",
-  1: "#ffff00",
-  2: "#66e67a",
-  3: "#006b00"
+  1: "#ff0000",
+  2: "#ffff00",
+  3: "#66e67a",
+  4: "#006b00"
 };
 
 proj4.defs(RASTER_CRS, UTM43N);
+proj4.defs("32643", UTM43N);
 
 const map = L.map("map", {
   zoomControl: true,
@@ -63,7 +64,13 @@ async function resolveWaybackLayer(targetDate) {
     const identifier = layer.getElementsByTagNameNS("*", "Identifier")[0]?.textContent?.trim();
     const title = layer.getElementsByTagNameNS("*", "Title")[0]?.textContent?.trim() || "";
     const abstract = layer.getElementsByTagNameNS("*", "Abstract")[0]?.textContent?.trim() || "";
-    return { identifier, title, date: extractDate(`${title} ${abstract} ${identifier}`) };
+    
+    const resourceUrl = layer.getElementsByTagNameNS("*", "ResourceURL")[0];
+    const template = resourceUrl?.getAttribute("template") || "";
+    const match = template.match(/\/tile\/(\d+)\//);
+    const numericId = match ? match[1] : identifier;
+
+    return { identifier, numericId, title, date: extractDate(`${title} ${abstract} ${identifier}`) };
   }).filter(item => item.identifier && item.date);
 
   if (!layers.length) throw new Error("No dated Wayback layers were found");
@@ -83,7 +90,7 @@ async function resolveWaybackLayer(targetDate) {
   return {
     ...selected,
     exact,
-    url: `https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/default028mm/MapServer/tile/${selected.identifier}/{z}/{y}/{x}`
+    url: `https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/default028mm/MapServer/tile/${selected.numericId}/{z}/{y}/{x}`
   };
 }
 
@@ -99,18 +106,64 @@ function loadKml() {
   });
 }
 
+function extractPolygons(geojson) {
+  const polygons = [];
+  const traverse = (geom) => {
+    if (!geom) return;
+    if (geom.type === "Polygon") {
+      polygons.push(geom.coordinates);
+    } else if (geom.type === "MultiPolygon") {
+      polygons.push(...geom.coordinates);
+    } else if (geom.type === "GeometryCollection" && geom.geometries) {
+      geom.geometries.forEach(traverse);
+    }
+  };
+  
+  if (geojson.type === "FeatureCollection" && geojson.features) {
+    geojson.features.forEach(f => traverse(f.geometry));
+  } else if (geojson.type === "Feature") {
+    traverse(geojson.geometry);
+  } else {
+    traverse(geojson);
+  }
+  return polygons;
+}
+
+function reprojectGeometry(geometry, fromCRS, toCRS) {
+  const reprojectCoords = (coords) => {
+    if (!coords) return coords;
+    if (typeof coords[0] === "number") {
+      return proj4(fromCRS, toCRS, coords);
+    }
+    return coords.map(reprojectCoords);
+  };
+  return {
+    type: geometry.type,
+    coordinates: reprojectCoords(geometry.coordinates)
+  };
+}
+
 async function loadRaster(maskGeoJSON) {
   const response = await fetch(ROI_TIF_URL);
   if (!response.ok) throw new Error(`Could not load roi.tif (${response.status})`);
 
   const georaster = await parseGeoraster(await response.arrayBuffer());
+  
+  const multiPolygonCoords = extractPolygons(maskGeoJSON);
+  const multiPolygon = {
+    type: "MultiPolygon",
+    coordinates: multiPolygonCoords
+  };
+
+  const reprojectedMask = reprojectGeometry(multiPolygon, "EPSG:4326", RASTER_CRS);
+
   rasterLayer = new GeoRasterLayer({
     georaster,
     opacity: transparencyToOpacity(),
     resolution: 256,
     resampleMethod: "nearest",
-    mask: maskGeoJSON,
-    mask_srs: "EPSG:4326",
+    mask: reprojectedMask,
+    mask_srs: RASTER_CRS,
     mask_strategy: "outside",
     pixelValuesToColorFn: values => CLASS_COLORS[values[0]] || null
   });
