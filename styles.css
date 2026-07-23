@@ -5,44 +5,46 @@
 
 * { box-sizing: border-box; }
 html, body, #map { width: 100%; height: 100%; margin: 0; }
-body { overflow: hidden; }
+body { overflow: hidden; background: #0e1720; }
 
 .panel {
   position: fixed;
   z-index: 1000;
   top: 16px;
   right: 16px;
-  width: min(330px, calc(100vw - 32px));
+  width: min(350px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
   padding: 18px;
-  border: 1px solid rgba(255,255,255,.7);
+  border: 1px solid rgba(255,255,255,.72);
   border-radius: 14px;
   background: rgba(255,255,255,.94);
-  box-shadow: 0 12px 34px rgba(0,0,0,.18);
+  box-shadow: 0 12px 34px rgba(0,0,0,.22);
   backdrop-filter: blur(8px);
 }
 
 h1 { margin: 0 0 5px; font-size: 1.15rem; }
+h2 { margin: 0 0 8px; font-size: .88rem; }
 .hint { margin: 0 0 16px; color: #5b6570; font-size: .9rem; }
 label { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: .86rem; font-weight: 650; }
 input[type="range"] { width: 100%; }
 
-.coordinates {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 15px;
-}
+.legend { margin-top: 16px; padding-top: 14px; border-top: 1px solid #dde3e8; }
+.legend div { display: flex; align-items: center; gap: 10px; margin: 7px 0; font-size: .84rem; }
+.legend i { width: 24px; height: 18px; border: 1px solid rgba(0,0,0,.18); border-radius: 4px; background: var(--swatch); flex: 0 0 auto; }
+
+.coordinates { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
 .coordinates div { padding: 9px; border-radius: 9px; background: #f2f5f7; }
 .coordinates span { display: block; color: #66717c; font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; }
 .coordinates strong { display: block; margin-top: 3px; font-size: .88rem; font-variant-numeric: tabular-nums; }
 .coordinates small { grid-column: 1 / -1; color: #6b7480; }
 .status { margin-top: 12px; color: #53606c; font-size: .82rem; }
 .status.error { color: #a12622; }
-
 .leaflet-popup-content { font-variant-numeric: tabular-nums; line-height: 1.5; }
+.leaflet-control-attribution { background: rgba(255,255,255,.86) !important; }
 
 @media (max-width: 600px) {
-  .panel { top: auto; bottom: 12px; right: 12px; width: calc(100vw - 24px); padding: 14px; }
+  .panel { top: auto; bottom: 12px; right: 12px; width: calc(100vw - 24px); max-height: 52vh; padding: 14px; }
   .hint { display: none; }
   .coordinates { margin-top: 9px; }
 }

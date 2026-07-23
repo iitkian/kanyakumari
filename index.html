@@ -3,26 +3,29 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Classified GeoTIFF over Esri World Imagery Wayback tiles" />
-  <title>Classified Raster Viewer</title>
+  <meta name="description" content="ROI GeoTIFF over date-specific Esri World Imagery Wayback tiles" />
+  <title>ROI Classified Raster Viewer</title>
 
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main id="map" aria-label="Interactive map"></main>
+  <main id="map" aria-label="Interactive ROI map"></main>
 
   <aside class="panel" aria-live="polite">
     <h1>Classified raster</h1>
-    <p class="hint">Click anywhere on the map to inspect its coordinates.</p>
+    <p class="hint">Click inside the ROI to inspect its coordinates.</p>
 
-    <label for="opacity">Overlay opacity <span id="opacity-value">75%</span></label>
-    <input id="opacity" type="range" min="0" max="1" value="0.75" step="0.05" />
+    <label for="opacity">Raster transparency <span id="opacity-value">25%</span></label>
+    <input id="opacity" type="range" min="0" max="1" value="0.25" step="0.05" />
+
+    <section class="legend" aria-label="Raster legend">
+      <h2>Legend</h2>
+      <div><i style="--swatch:#ff0000"></i><span>Scrub / Non Forest</span></div>
+      <div><i style="--swatch:#ffff00"></i><span>Open Forest</span></div>
+      <div><i style="--swatch:#66e67a"></i><span>Moderately Dense Forest</span></div>
+      <div><i style="--swatch:#006b00"></i><span>Very Dense Forest</span></div>
+    </section>
 
     <section class="coordinates">
       <div><span>Latitude</span><strong id="latitude">—</strong></div>
@@ -32,12 +35,15 @@
       <small>WGS 84 / UTM zone 43N (EPSG:32643)</small>
     </section>
 
-    <div id="status" class="status">Loading overlay…</div>
+    <div id="status" class="status">Loading ROI and raster…</div>
   </aside>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="https://unpkg.com/proj4@2.12.1/dist/proj4.js"></script>
+  <script src="https://unpkg.com/leaflet-omnivore@0.3.4/leaflet-omnivore.min.js"></script>
+  <script src="https://unpkg.com/leaflet-boundary-canvas@1.0.0/src/BoundaryCanvas.js"></script>
+  <script src="https://unpkg.com/georaster"></script>
+  <script src="https://unpkg.com/georaster-layer-for-leaflet"></script>
   <script src="app.js"></script>
 </body>
 </html>
