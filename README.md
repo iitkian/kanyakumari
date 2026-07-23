@@ -4,7 +4,7 @@ A static GitHub Pages project that displays:
 
 - `roi.tif` as a classified raster
 - `roi.kml` as the ROI boundary and clipping mask
-- Esri World Imagery Wayback tiles for **2026-05-28**, clipped to the KML region
+- Satellite imagery clipped to the KML region
 - Clicked latitude/longitude and WGS 84 / UTM zone 43N coordinates
 - A raster transparency slider
 - A four-class legend
@@ -24,7 +24,7 @@ All other raster values are transparent.
 
 - `index.html` — app markup and CDN dependencies
 - `styles.css` — responsive layout
-- `app.js` — KML/TIFF loading, Wayback lookup, clipping, legend, transparency, and coordinates
+- `app.js` — KML/TIFF loading, satellite imagery lookup, clipping, legend, transparency, and coordinates
 - `roi.tif` — sample GeoTIFF copied from the supplied raster
 - `roi.kml` — ROI polygon generated from the valid-data footprint of the sample GeoTIFF
 
@@ -44,6 +44,6 @@ Then open `http://localhost:8000`.
 
 Upload all files to the repository root, commit, then enable GitHub Pages from the `main` branch and `/ (root)` folder.
 
-## Wayback date behavior
+## Satellite date behavior
 
-The app downloads Esri's WMTS capabilities and looks for an exact release dated `2026-05-28`. If Esri has no release on that exact publication date, it uses the nearest available Wayback release and reports the selected date in the status panel. Wayback publication dates are not necessarily the imagery acquisition dates.
+The app downloads satellite capabilities and looks for the release closest to the target date configured in `app.js`. If there is no release on that exact publication date, it uses the nearest available release. Publication dates are not necessarily the imagery acquisition dates.
