@@ -186,15 +186,8 @@ function addClickInspector() {
     document.getElementById("easting").textContent = `${easting.toFixed(2)} m`;
     document.getElementById("northing").textContent = `${northing.toFixed(2)} m`;
 
-    const popupHtml = `
-      <strong>Clicked coordinates</strong><br>
-      Lat, Lon: ${lat.toFixed(7)}, ${lng.toFixed(7)}<br>
-      UTM 43N: ${easting.toFixed(2)}, ${northing.toFixed(2)}
-    `;
-
     if (!clickMarker) clickMarker = L.marker(event.latlng).addTo(map);
     else clickMarker.setLatLng(event.latlng);
-    clickMarker.bindPopup(popupHtml).openPopup();
   });
 }
 
@@ -230,7 +223,7 @@ async function init() {
     roi.layer.addTo(map).bringToFront();
     addClickInspector();
 
-    setStatus(`Loaded roi.tif and roi.kml with ${waybackMessage}.`);
+    setStatus("");
   } catch (error) {
     console.error(error);
     setStatus(`${error.message}. Serve the folder over HTTP; do not open index.html directly.`, true);
