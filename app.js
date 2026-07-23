@@ -1,9 +1,6 @@
 const TARGET_WAYBACK_DATE = "2026-05-28";
 const ROI_KML_URL = "roi.kml";
 const ROI_TIF_URL = "roi.tif";
-const RASTER_CRS = "EPSG:32643";
-const RASTER_CRS_LABEL = "WGS 84 / UTM zone 43N (EPSG:32643)";
-const UTM43N = "+proj=utm +zone=43 +datum=WGS84 +units=m +no_defs +type=crs";
 const WAYBACK_CAPABILITIES =
   "https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/WMTS/1.0.0/WMTSCapabilities.xml";
 
@@ -14,9 +11,6 @@ const CLASS_COLORS = {
   3: "#006b00"
 };
 
-proj4.defs(RASTER_CRS, UTM43N);
-proj4.defs("32643", UTM43N);
-
 const map = L.map("map", {
   zoomControl: true,
   preferCanvas: true,
@@ -26,7 +20,7 @@ const map = L.map("map", {
 });
 
 L.control.attribution({ prefix: false, position: "bottomright" })
-  .addAttribution("Powered by Leaflet, Meta, hf, ESRI, esa, GitHub")
+  .addAttribution("Powered by Leaflet, Meta, hf, ESRI, esa, GitHub<br>App by Dr. Ankur Awadhiya, IFS")
   .addTo(map);
 
 const opacityEl = document.getElementById("opacity");
@@ -176,16 +170,12 @@ async function loadRaster(maskGeoJSON) {
 function addClickInspector() {
   map.on("click", event => {
     const { lat, lng } = event.latlng;
-    const point = { type: "Point", coordinates: [lng, lat] };
 
     // Leaflet's bounds check keeps clicks near the ROI sensible; the KML border remains visible.
     if (!L.geoJSON(roiGeoJSON).getBounds().contains(event.latlng)) return;
 
-    const [easting, northing] = proj4("EPSG:4326", RASTER_CRS, [lng, lat]);
     document.getElementById("latitude").textContent = lat.toFixed(7);
     document.getElementById("longitude").textContent = lng.toFixed(7);
-    document.getElementById("easting").textContent = `${easting.toFixed(2)} m`;
-    document.getElementById("northing").textContent = `${northing.toFixed(2)} m`;
 
     if (!clickMarker) clickMarker = L.marker(event.latlng).addTo(map);
     else clickMarker.setLatLng(event.latlng);
@@ -195,12 +185,16 @@ function addClickInspector() {
 async function init() {
   try {
     setTransparencyLabel();
-    document.getElementById("projection-label").textContent = RASTER_CRS_LABEL;
     const roi = await loadKml();
     roiGeoJSON = roi.geojson;
 
     map.fitBounds(roi.bounds, { padding: [18, 18] });
     map.setMaxBounds(roi.bounds.pad(0.08));
+
+    const center = roi.bounds.getCenter();
+    document.getElementById("latitude").textContent = center.lat.toFixed(7);
+    document.getElementById("longitude").textContent = center.lng.toFixed(7);
+    clickMarker = L.marker(center).addTo(map);
 
     let waybackMessage = "";
     try {
