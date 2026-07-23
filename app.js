@@ -20,7 +20,7 @@ const map = L.map("map", {
 });
 
 L.control.attribution({ prefix: false, position: "bottomright" })
-  .addAttribution("Powered by Leaflet, Meta, hf, ESRI, esa, GitHub<br>App by Dr. Ankur Awadhiya, IFS")
+  .addAttribution("Powered by Leaflet, Meta, hf, ESRI, esa, GitHub<br>Experimental App by Dr. Ankur Awadhiya, IFS")
   .addTo(map);
 
 const opacityEl = document.getElementById("opacity");
