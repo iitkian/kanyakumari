@@ -2,6 +2,7 @@ const TARGET_WAYBACK_DATE = "2026-05-28";
 const ROI_KML_URL = "roi.kml";
 const ROI_TIF_URL = "roi.tif";
 const RASTER_CRS = "EPSG:32643";
+const RASTER_CRS_LABEL = "WGS 84 / UTM zone 43N (EPSG:32643)";
 const UTM43N = "+proj=utm +zone=43 +datum=WGS84 +units=m +no_defs +type=crs";
 const WAYBACK_CAPABILITIES =
   "https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/WMTS/1.0.0/WMTSCapabilities.xml";
@@ -194,6 +195,7 @@ function addClickInspector() {
 async function init() {
   try {
     setTransparencyLabel();
+    document.getElementById("projection-label").textContent = RASTER_CRS_LABEL;
     const roi = await loadKml();
     roiGeoJSON = roi.geojson;
 
