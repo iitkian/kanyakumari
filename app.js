@@ -7,10 +7,10 @@ const WAYBACK_CAPABILITIES =
   "https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/WMTS/1.0.0/WMTSCapabilities.xml";
 
 const CLASS_COLORS = {
-  1: "#ff0000",
-  2: "#ffff00",
-  3: "#66e67a",
-  4: "#006b00"
+  0: "#ff0000",
+  1: "#ffff00",
+  2: "#66e67a",
+  3: "#006b00"
 };
 
 proj4.defs(RASTER_CRS, UTM43N);
@@ -155,7 +155,8 @@ async function loadRaster(maskGeoJSON) {
     coordinates: multiPolygonCoords
   };
 
-  const reprojectedMask = reprojectGeometry(multiPolygon, "EPSG:4326", RASTER_CRS);
+  const georasterCRS = "EPSG:" + georaster.projection;
+  const reprojectedMask = reprojectGeometry(multiPolygon, "EPSG:4326", georasterCRS);
 
   rasterLayer = new GeoRasterLayer({
     georaster,
@@ -163,7 +164,7 @@ async function loadRaster(maskGeoJSON) {
     resolution: 256,
     resampleMethod: "nearest",
     mask: reprojectedMask,
-    mask_srs: RASTER_CRS,
+    mask_srs: georasterCRS,
     mask_strategy: "outside",
     pixelValuesToColorFn: values => CLASS_COLORS[values[0]] || null
   });
