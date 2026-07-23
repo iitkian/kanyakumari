@@ -28,7 +28,22 @@ All other raster values are transparent.
 - `roi.tif` — sample GeoTIFF copied from the supplied raster
 - `roi.kml` — ROI polygon generated from the valid-data footprint of the sample GeoTIFF
 
-Replace `roi.tif` and `roi.kml` with your own files while retaining these exact filenames. The raster must be georeferenced. The coordinate readout currently assumes EPSG:32643 for UTM output; change `RASTER_CRS` and `UTM43N` in `app.js` for another zone.
+Replace `roi.tif` and `roi.kml` with your own files while retaining these exact filenames. The raster must be georeferenced.
+
+## GeoTIFF Preprocessing & Compression
+
+To prevent the browser from freezing or running out of memory when loading high-resolution rasters (e.g., several billion pixels or non-standard bit depths like 2-bit), you should downsample and compress the GeoTIFF before placing it in the repository.
+
+You can use GDAL to convert your raster to an 8-bit, compressed, and downsampled file:
+
+```bash
+gdal_translate -ot Byte -co COMPRESS=DEFLATE -outsize 4216 4555 input_raw.tif roi.tif
+```
+
+- `-ot Byte`: Converts pixel values to standard 8-bit unsigned integers, resolving parsing hangs in browser JS engines.
+- `-co COMPRESS=DEFLATE`: Applies lossless deflate compression.
+- `-outsize 4216 4555`: Downsamples the image dimensions (approx. 6.25% of a 73k x 73k original raster) so that it parses instantly in browser memory.
+
 
 ## Run locally
 
