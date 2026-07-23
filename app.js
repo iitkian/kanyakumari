@@ -15,11 +15,12 @@ const ROI_BOUNDS = L.latLngBounds(
 proj4.defs(RASTER_CRS, UTM43N);
 
 const map = L.map("map", {
-  zoomControl: true,
+  zoomControl: false,
   preferCanvas: true,
   maxBounds: ROI_BOUNDS.pad(0.03),
   maxBoundsViscosity: 1.0,
-  minZoom: 10
+  minZoom: 15,
+  maxZoom: 15
 });
 
 const wayback = L.tileLayer(WAYBACK_URL, {
@@ -56,7 +57,7 @@ overlay.on("error", () => {
 });
 
 overlay.addTo(map);
-map.fitBounds(ROI_BOUNDS, { padding: [15, 15], animate: false });
+map.setView(ROI_BOUNDS.getCenter(), 15, { animate: false });
 
 L.control.layers(
   { "Esri Wayback imagery": wayback },
