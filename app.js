@@ -19,7 +19,7 @@ const map = L.map("map", {
   maxZoom: 23
 });
 
-L.control.attribution({ prefix: false, position: "bottomright" })
+L.control.attribution({ prefix: false, position: "bottomleft" })
   .addAttribution("Powered by Leaflet, Meta, hf, ESRI, esa, GitHub<br>Experimental AI tool by Dr. Ankur Awadhiya, IFS, for estimating tree canopy cover from images. Results should be verified before being used for scientific, legal, or management decisions.")
   .addTo(map);
 

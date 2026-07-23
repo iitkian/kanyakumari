@@ -41,7 +41,12 @@ input[type="range"] { width: 100%; }
 .status { margin-top: 12px; color: #53606c; font-size: .82rem; }
 .status.error { color: #a12622; }
 .leaflet-popup-content { font-variant-numeric: tabular-nums; line-height: 1.5; }
-.leaflet-control-attribution { background: rgba(255,255,255,.86) !important; }
+.leaflet-control-attribution,
+.leaflet-control-attribution a {
+  background: transparent !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
+}
 
 @media (max-width: 600px) {
   .panel { top: auto; bottom: 12px; right: 12px; width: calc(100vw - 24px); max-height: 52vh; padding: 14px; }
